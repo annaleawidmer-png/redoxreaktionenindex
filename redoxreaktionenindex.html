@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Redoxreaktionen – Interaktive Übungen</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Mono:wght@400;500&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0f14;
+    --surface: #161920;
+    --surface2: #1e2230;
+    --border: rgba(255,255,255,0.07);
+    --border2: rgba(255,255,255,0.13);
+    --text: #e8eaf0;
+    --text2: #8a90a8;
+    --text3: #555c78;
+    --accent: #3ecf8e;
+    --accent-dim: rgba(62,207,142,0.12);
+    --accent-dim2: rgba(62,207,142,0.22);
+    --red: #e05c6a;
+    --red-dim: rgba(224,92,106,0.12);
+    --blue: #5b9cf6;
+    --blue-dim: rgba(91,156,246,0.12);
+    --amber: #f0b429;
+    --amber-dim: rgba(240,180,41,0.12);
+    --radius: 10px;
+    --radius-lg: 16px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Lato', sans-serif;
+    font-weight: 300;
+    min-height: 100vh;
+    line-height: 1.6;
+  }
+
+  /* Background grid pattern */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(62,207,142,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(62,207,142,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 3rem 1.5rem 4rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Header */
+  .header {
+    margin-bottom: 3rem;
+    animation: fadeUp 0.6s ease both;
+  }
+
+  .header-eyebrow {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  .header h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(32px, 6vw, 52px);
+    font-weight: 400;
+    color: var(--text);
+    line-height: 1.1;
+    letter-spacing: -0.5px;
+    margin-bottom: 12px;
+  }
+
+  .header h1 em {
+    font-style: normal;
+    color: var(--accent);
+  }
+
+  .header p {
+    font-size: 15px;
+    color: var(--text2);
+  }
+
+  /* Score bar */
+  .score-bar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    animation: fadeUp 0.6s 0.1s ease both;
+  }
+
+  .chip {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 7px 14px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--text2);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .chip .val {
+    color: var(--accent);
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  /* Progress */
+  .progress-wrap {
+    margin-bottom: 2rem;
+    animation: fadeUp 0.6s 0.15s ease both;
+  }
+
+  .progress-track {
+    height: 3px;
+    background: var(--surface2);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 2px;
+    transition: width 0.5s cubic-bezier(0.4,0,0.2,1);
+    box-shadow: 0 0 8px rgba(62,207,142,0.4);
+  }
+
+  /* Navigation */
+  .nav {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 2rem;
+    animation: fadeUp 0.6s 0.2s ease both;
+  }
+
+  .nav-btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-family: 'Lato', sans-serif;
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--text2);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .nav-btn:hover {
+    border-color: var(--border2);
+    color: var(--text);
+    background: var(--surface2);
+  }
+
+  .nav-btn.active {
+    background: var(--accent-dim);
+    border-color: rgba(62,207,142,0.35);
+    color: var(--accent);
+  }
+
+  /* Card */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 2rem;
+    margin-bottom: 1rem;
+    animation: fadeUp 0.4s ease both;
+  }
+
+  .section-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text3);
+    margin-bottom: 1.25rem;
+  }
+
+  .task-q {
+    font-size: 17px;
+    color: var(--text);
+    margin-bottom: 1.25rem;
+    line-height: 1.6;
+  }
+
+  .formula-box {
+    font-family: 'DM Mono', monospace;
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--text);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 12px 18px;
+    border-radius: var(--radius);
+    display: inline-block;
+    margin-bottom: 1.5rem;
+    letter-spacing: 0.5px;
+  }
+
+  .ask-label {
+    font-size: 13px;
+    color: var(--text2);
+    margin-bottom: 12px;
+    font-family: 'DM Mono', monospace;
+  }
+
+  /* Options */
+  .options-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 8px;
+    margin-bottom: 1.25rem;
+  }
+
+  .options-grid.cols-2 { grid-template-columns: 1fr 1fr; max-width: 320px; }
+  .options-grid.cols-1 { grid-template-columns: 1fr; }
+
+  .opt {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 11px 14px;
+    font-family: 'DM Mono', monospace;
+    font-size: 14px;
+    color: var(--text);
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.18s;
+    line-height: 1.4;
+  }
+
+  .opt:hover:not(:disabled) {
+    border-color: var(--border2);
+    background: #252a3a;
+    transform: translateY(-1px);
+  }
+
+  .opt:disabled { cursor: default; }
+
+  .opt.correct {
+    background: var(--accent-dim);
+    border-color: rgba(62,207,142,0.4);
+    color: var(--accent);
+  }
+
+  .opt.wrong {
+    background: var(--red-dim);
+    border-color: rgba(224,92,106,0.4);
+    color: var(--red);
+  }
+
+  /* Feedback */
+  .feedback {
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    font-size: 14px;
+    line-height: 1.6;
+    margin-top: 1rem;
+    animation: fadeUp 0.3s ease both;
+  }
+
+  .feedback.correct {
+    background: var(--accent-dim);
+    border: 1px solid rgba(62,207,142,0.25);
+    color: #a8f0d0;
+  }
+
+  .feedback.wrong {
+    background: var(--red-dim);
+    border: 1px solid rgba(224,92,106,0.25);
+    color: #f0a8b0;
+  }
+
+  .feedback strong { font-weight: 700; }
+
+  .feedback.info {
+    background: var(--blue-dim);
+    border: 1px solid rgba(91,156,246,0.2);
+    color: #a8c8f8;
+  }
+
+  /* Tags */
+  .tag {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 6px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    margin: 2px;
+  }
+
+  .tag-ox { background: var(--red-dim); color: var(--red); border: 1px solid rgba(224,92,106,0.2); }
+  .tag-red-chem { background: var(--accent-dim); color: var(--accent); border: 1px solid rgba(62,207,142,0.2); }
+  .tag-neutral { background: var(--surface2); color: var(--text2); border: 1px solid var(--border); }
+
+  /* Buttons */
+  .next-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--accent);
+    border: none;
+    border-radius: var(--radius);
+    padding: 10px 22px;
+    font-family: 'Lato', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: #0d1a12;
+    cursor: pointer;
+    margin-top: 1rem;
+    transition: all 0.2s;
+  }
+
+  .next-btn:hover {
+    background: #5bdfaa;
+    transform: translateY(-1px);
+  }
+
+  /* Eq rows for theory/halfEq */
+  .eq-block {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 1.25rem;
+  }
+
+  .eq-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    color: var(--text2);
+  }
+
+  .eq-formula {
+    font-family: 'DM Mono', monospace;
+    font-size: 14px;
+    color: var(--text);
+  }
+
+  /* Theory specific */
+  .theory-section {
+    margin-bottom: 1.75rem;
+    padding-bottom: 1.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .theory-section:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+  }
+
+  .theory-section h3 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 20px;
+    font-weight: 400;
+    color: var(--text);
+    margin-bottom: 12px;
+  }
+
+  .theory-section p {
+    font-size: 14px;
+    color: var(--text2);
+    line-height: 1.7;
+  }
+
+  .rule-list {
+    list-style: none;
+    padding: 0;
+  }
+
+  .rule-list li {
+    font-size: 14px;
+    color: var(--text2);
+    padding: 7px 0;
+    border-bottom: 1px solid var(--border);
+    line-height: 1.5;
+    display: flex;
+    gap: 8px;
+  }
+
+  .rule-list li:last-child { border-bottom: none; }
+
+  .rule-list li::before {
+    content: "→";
+    color: var(--accent);
+    flex-shrink: 0;
+    font-family: 'DM Mono', monospace;
+  }
+
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 10px;
+  }
+
+  .info-box {
+    border-radius: var(--radius);
+    padding: 14px;
+  }
+
+  .info-box-red {
+    background: var(--red-dim);
+    border: 1px solid rgba(224,92,106,0.2);
+  }
+
+  .info-box-green {
+    background: var(--accent-dim);
+    border: 1px solid rgba(62,207,142,0.2);
+  }
+
+  .info-box-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .info-box-red .info-box-label { color: var(--red); }
+  .info-box-green .info-box-label { color: var(--accent); }
+
+  .info-box p {
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  .info-box-red p { color: #f0a8b0; }
+  .info-box-green p { color: #a8f0d0; }
+
+  .hidden { display: none; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Responsive */
+  @media (max-width: 520px) {
+    .two-col { grid-template-columns: 1fr; }
+    .card { padding: 1.25rem; }
+    .options-grid.cols-2 { max-width: 100%; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <div class="header-eyebrow">Chemie · Sekundarstufe II</div>
+    <h1>Redox<em>reaktionen</em></h1>
+    <p>Oxidationszahlen · Teilgleichungen · Oxidations- und Reduktionsmittel</p>
+  </div>
+
+  <div class="score-bar">
+    <div class="chip">Punkte <span class="val" id="score">0</span></div>
+    <div class="chip">Aufgabe <span class="val" id="tasknum">1</span> / <span class="val" id="tasktotal">–</span></div>
+    <div class="chip">Richtig <span class="val" id="correct-count">0</span></div>
+  </div>
+
+  <div class="progress-wrap">
+    <div class="progress-track"><div class="progress-fill" id="pbar" style="width:0%"></div></div>
+  </div>
+
+  <div class="nav">
+    <button class="nav-btn active" onclick="showMod('ox',event)">Oxidationszahlen</button>
+    <button class="nav-btn" onclick="showMod('redox',event)">Redox erkennen</button>
+    <button class="nav-btn" onclick="showMod('agents',event)">Ox.- &amp; Reduktionsmittel</button>
+    <button class="nav-btn" onclick="showMod('halfEq',event)">Teilgleichungen</button>
+    <button class="nav-btn" onclick="showMod('theory',event)">Theorie</button>
+  </div>
+
+  <div id="mod-ox"></div>
+  <div id="mod-redox" class="hidden"></div>
+  <div id="mod-agents" class="hidden"></div>
+  <div id="mod-halfEq" class="hidden"></div>
+  <div id="mod-theory" class="hidden"></div>
+
+</div>
+
+<script>
+const st = { score:0, correct:0, current:'ox', idx:{ox:0,redox:0,agents:0,halfEq:0}, sh:{} };
+
+function shuffle(arr) {
+  const a=[...arr];
+  for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}
+  return a;
+}
+
+function shuffleOpts(options, correctIdx) {
+  const pairs = options.map((o,i)=>({o,i}));
+  const sp = shuffle(pairs);
+  return { opts: sp.map(x=>x.o), correctPos: sp.findIndex(x=>x.i===correctIdx) };
+}
+
+function getSh(mod, i) {
+  const key = mod+'_'+i;
+  if(!st.sh[key]) {
+    const tasks = {ox:oxTasks,agents:agentsTasks,halfEq:halfEqTasks}[mod];
+    if(!tasks) return null;
+    const t = tasks[i % tasks.length];
+    st.sh[key] = shuffleOpts(t.options, t.answer);
+  }
+  return st.sh[key];
+}
+
+const oxTasks = [
+  {q:"Bestimme die Oxidationszahl von <strong>Schwefel</strong> in H₂SO₄.",formula:"H₂SO₄",atom:"S",options:["+6","+4","+2","−2"],answer:0,hint:"H = +1, O = −2. Gesamtladung = 0: 2(+1) + x + 4(−2) = 0 &nbsp;→&nbsp; x = <strong>+6</strong>."},
+  {q:"Bestimme die Oxidationszahl von <strong>Stickstoff</strong> in NO₃⁻.",formula:"NO₃⁻",atom:"N",options:["+5","+3","+2","−3"],answer:0,hint:"O = −2, Gesamtladung = −1: x + 3(−2) = −1 &nbsp;→&nbsp; x = <strong>+5</strong>."},
+  {q:"Bestimme die Oxidationszahl von <strong>Mangan</strong> in MnO₄⁻.",formula:"MnO₄⁻",atom:"Mn",options:["+7","+6","+4","+2"],answer:0,hint:"O = −2, Gesamtladung = −1: x + 4(−2) = −1 &nbsp;→&nbsp; x = <strong>+7</strong>."},
+  {q:"Bestimme die Oxidationszahl von <strong>Chlor</strong> in HClO₃.",formula:"HClO₃",atom:"Cl",options:["+5","+3","+1","+7"],answer:0,hint:"H = +1, O = −2: (+1) + x + 3(−2) = 0 &nbsp;→&nbsp; x = <strong>+5</strong>."},
+  {q:"Bestimme die Oxidationszahl von <strong>Eisen</strong> in Fe₂O₃.",formula:"Fe₂O₃",atom:"Fe",options:["+3","+2","+4","+1"],answer:0,hint:"O = −2: 2x + 3(−2) = 0 &nbsp;→&nbsp; x = <strong>+3</strong>."},
+  {q:"Bestimme die Oxidationszahl von <strong>Chrom</strong> in Cr₂O₇²⁻.",formula:"Cr₂O₇²⁻",atom:"Cr",options:["+6","+3","+4","+7"],answer:0,hint:"O = −2, Ladung = −2: 2x + 7(−2) = −2 &nbsp;→&nbsp; x = <strong>+6</strong>."},
+  {q:"Bestimme die Oxidationszahl von <strong>Phosphor</strong> in PO₄³⁻.",formula:"PO₄³⁻",atom:"P",options:["+5","+3","+1","−3"],answer:0,hint:"O = −2, Ladung = −3: x + 4(−2) = −3 &nbsp;→&nbsp; x = <strong>+5</strong>."},
+  {q:"Bestimme die Oxidationszahl von <strong>Kohlenstoff</strong> in CO₂.",formula:"CO₂",atom:"C",options:["+4","+2","−2","0"],answer:0,hint:"O = −2: x + 2(−2) = 0 &nbsp;→&nbsp; x = <strong>+4</strong>."},
+  {q:"Bestimme die Oxidationszahl von <strong>Schwefel</strong> in SO₃²⁻.",formula:"SO₃²⁻",atom:"S",options:["+4","+6","+2","−2"],answer:0,hint:"O = −2, Ladung = −2: x + 3(−2) = −2 &nbsp;→&nbsp; x = <strong>+4</strong>."},
+  {q:"Bestimme die Oxidationszahl von <strong>Stickstoff</strong> in NH₃.",formula:"NH₃",atom:"N",options:["−3","−1","+3","+1"],answer:0,hint:"H = +1: x + 3(+1) = 0 &nbsp;→&nbsp; x = <strong>−3</strong>."},
+];
+
+const redoxTasks = [
+  {q:"Liegt eine Redoxreaktion vor?",formula:"Zn + 2HCl → ZnCl₂ + H₂",answer:"ja",changes:["Zn: 0 → +2 (oxidiert)","H: +1 → 0 (reduziert)"],noR:""},
+  {q:"Liegt eine Redoxreaktion vor?",formula:"NaOH + HCl → NaCl + H₂O",answer:"nein",changes:[],noR:"Keine OZ-Änderung – Neutralisationsreaktion."},
+  {q:"Liegt eine Redoxreaktion vor?",formula:"2Fe + 3Cl₂ → 2FeCl₃",answer:"ja",changes:["Fe: 0 → +3 (oxidiert)","Cl: 0 → −1 (reduziert)"],noR:""},
+  {q:"Liegt eine Redoxreaktion vor?",formula:"CaCO₃ → CaO + CO₂",answer:"nein",changes:[],noR:"Ca bleibt +2, C bleibt +4, O bleibt −2 – keine Redoxreaktion."},
+  {q:"Liegt eine Redoxreaktion vor?",formula:"2H₂O₂ → 2H₂O + O₂",answer:"ja",changes:["O in H₂O₂: −1 → −2 (red.) und −1 → 0 (ox.) – Disproportionierung!"],noR:""},
+  {q:"Liegt eine Redoxreaktion vor?",formula:"AgNO₃ + NaCl → AgCl + NaNO₃",answer:"nein",changes:[],noR:"Alle OZ gleich – Fällungsreaktion."},
+  {q:"Liegt eine Redoxreaktion vor?",formula:"2Mg + O₂ → 2MgO",answer:"ja",changes:["Mg: 0 → +2 (oxidiert)","O: 0 → −2 (reduziert)"],noR:""},
+  {q:"Liegt eine Redoxreaktion vor?",formula:"Ba²⁺ + SO₄²⁻ → BaSO₄",answer:"nein",changes:[],noR:"Keine OZ-Änderung – reine Fällungsreaktion."},
+];
+
+const agentsTasks = [
+  {q:"Welche Substanz ist das <strong>Reduktionsmittel</strong>?",formula:"Fe + CuSO₄ → FeSO₄ + Cu",info:"Fe: 0 → +2 (oxidiert), Cu²⁺: +2 → 0 (reduziert).",options:["Fe","Cu²⁺","SO₄²⁻","CuSO₄"],answer:0,hint:"Das Reduktionsmittel wird oxidiert (gibt e⁻ ab). <strong>Fe</strong>: 0 → +2."},
+  {q:"Welche Substanz ist das <strong>Oxidationsmittel</strong>?",formula:"Zn + H₂SO₄ → ZnSO₄ + H₂",info:"Zn: 0 → +2 (oxidiert), H⁺: +1 → 0 (reduziert).",options:["Zn","H₂SO₄","SO₄²⁻","ZnSO₄"],answer:1,hint:"Das Oxidationsmittel wird reduziert (nimmt e⁻ auf). <strong>H⁺</strong> in H₂SO₄: +1 → 0."},
+  {q:"Was ist das <strong>Oxidationsmittel</strong> bei der Verbrennung?",formula:"CH₄ + 2O₂ → CO₂ + 2H₂O",info:"C in CH₄: −4 → +4 (oxidiert), O₂: 0 → −2 (reduziert).",options:["CH₄","O₂","CO₂","H₂O"],answer:1,hint:"<strong>O₂</strong> wird von 0 auf −2 reduziert → Oxidationsmittel."},
+  {q:"Welches ist das <strong>Reduktionsmittel</strong>?",formula:"MnO₄⁻ + 5Fe²⁺ + 8H⁺ → Mn²⁺ + 5Fe³⁺ + 4H₂O",info:"Fe²⁺ → Fe³⁺ (oxidiert), Mn: +7 → +2 (reduziert).",options:["MnO₄⁻","Fe²⁺","H⁺","H₂O"],answer:1,hint:"<strong>Fe²⁺</strong> → Fe³⁺: gibt e⁻ ab → Reduktionsmittel."},
+  {q:"Was ist das <strong>Oxidationsmittel</strong>?",formula:"2Na + Cl₂ → 2NaCl",info:"Na: 0 → +1 (oxidiert), Cl₂: 0 → −1 (reduziert).",options:["Na","Cl₂","NaCl","Na⁺"],answer:1,hint:"<strong>Cl₂</strong> nimmt Elektronen auf, wird reduziert → Oxidationsmittel."},
+  {q:"Welche Substanz ist das <strong>Reduktionsmittel</strong>?",formula:"2Al + Fe₂O₃ → Al₂O₃ + 2Fe",info:"Al: 0 → +3 (oxidiert), Fe: +3 → 0 (reduziert).",options:["Al","Fe₂O₃","Al₂O₃","Fe"],answer:0,hint:"<strong>Al</strong> wird von 0 auf +3 oxidiert → gibt e⁻ ab → Reduktionsmittel."},
+];
+
+const halfEqTasks = [
+  {q:"Wähle die korrekte <strong>Oxidations</strong>-Teilgleichung für Zn → Zn²⁺.",type:"s",options:["Zn → Zn²⁺ + 2e⁻","Zn + 2e⁻ → Zn²⁺","Zn²⁺ + 2e⁻ → Zn","Zn → Zn²⁺ − 2e⁻"],answer:0,hint:"Oxidation = Elektronenabgabe: <strong>Zn → Zn²⁺ + 2e⁻</strong>"},
+  {q:"Wähle die korrekte <strong>Reduktions</strong>-Teilgleichung für Cu²⁺ → Cu.",type:"s",options:["Cu²⁺ + 2e⁻ → Cu","Cu²⁺ → Cu + 2e⁻","Cu → Cu²⁺ + 2e⁻","Cu²⁺ − 2e⁻ → Cu"],answer:0,hint:"Reduktion = Elektronenaufnahme: <strong>Cu²⁺ + 2e⁻ → Cu</strong>"},
+  {q:"Stelle die Gesamtgleichung auf:<br><br>Oxidation: <code>Zn → Zn²⁺ + 2e⁻</code><br>Reduktion: <code>Cu²⁺ + 2e⁻ → Cu</code>",type:"c",options:["Zn + Cu²⁺ → Zn²⁺ + Cu","Zn²⁺ + Cu → Zn + Cu²⁺","Zn + Cu → Zn²⁺ + Cu²⁺","Zn²⁺ + Cu²⁺ → Zn + Cu"],answer:0,hint:"Elektronen kürzen sich heraus → <strong>Zn + Cu²⁺ → Zn²⁺ + Cu</strong>"},
+  {q:"Wähle die korrekte <strong>Reduktions</strong>-Teilgleichung für MnO₄⁻ → Mn²⁺ (saure Lösung).",type:"s",options:["MnO₄⁻ + 8H⁺ + 5e⁻ → Mn²⁺ + 4H₂O","MnO₄⁻ + 5e⁻ → Mn²⁺","MnO₄⁻ + 8H⁺ → Mn²⁺ + 5e⁻ + 4H₂O","MnO₄⁻ + 4H₂O + 5e⁻ → Mn²⁺ + 8OH⁻"],answer:0,hint:"Mn: +7→+2 (5e⁻). 4 O-Atome mit 8H⁺ → 4H₂O: <strong>MnO₄⁻ + 8H⁺ + 5e⁻ → Mn²⁺ + 4H₂O</strong>"},
+  {q:"Wähle die korrekte <strong>Oxidations</strong>-Teilgleichung für Fe²⁺ → Fe³⁺.",type:"s",options:["Fe²⁺ → Fe³⁺ + e⁻","Fe²⁺ + e⁻ → Fe³⁺","Fe³⁺ + e⁻ → Fe²⁺","Fe²⁺ → Fe³⁺ − e⁻"],answer:0,hint:"Fe gibt 1 Elektron ab: <strong>Fe²⁺ → Fe³⁺ + e⁻</strong>"},
+  {q:"Stelle die Gesamtgleichung auf:<br><br>Oxidation: <code>2Fe²⁺ → 2Fe³⁺ + 2e⁻</code><br>Reduktion: <code>Cl₂ + 2e⁻ → 2Cl⁻</code>",type:"c",options:["2Fe²⁺ + Cl₂ → 2Fe³⁺ + 2Cl⁻","2Fe³⁺ + 2Cl⁻ → 2Fe²⁺ + Cl₂","2Fe²⁺ + 2Cl⁻ → 2Fe³⁺ + Cl₂","Cl₂ + 2Fe³⁺ → 2Fe²⁺ + 2Cl⁻"],answer:0,hint:"Elektronen kürzen sich: <strong>2Fe²⁺ + Cl₂ → 2Fe³⁺ + 2Cl⁻</strong>"},
+];
+
+function totalTasks() { return oxTasks.length+redoxTasks.length+agentsTasks.length+halfEqTasks.length; }
+function doneTasks() {
+  return Math.min(st.idx.ox,oxTasks.length)+Math.min(st.idx.redox,redoxTasks.length)
+        +Math.min(st.idx.agents,agentsTasks.length)+Math.min(st.idx.halfEq,halfEqTasks.length);
+}
+
+function updateUI() {
+  document.getElementById('score').textContent = st.score;
+  document.getElementById('correct-count').textContent = st.correct;
+  const done=doneTasks(), total=totalTasks();
+  document.getElementById('tasknum').textContent = Math.min(done+1,total);
+  document.getElementById('tasktotal').textContent = total;
+  document.getElementById('pbar').style.width = Math.round(done/total*100)+'%';
+}
+
+function showMod(mod, ev) {
+  st.current = mod;
+  ['ox','redox','agents','halfEq','theory'].forEach(m=>{
+    document.getElementById('mod-'+m).classList.toggle('hidden', m!==mod);
+  });
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  if(ev) ev.target.classList.add('active');
+  renderMod(mod);
+}
+
+function renderMod(mod) {
+  if(mod==='ox') renderOx();
+  else if(mod==='redox') renderRedox();
+  else if(mod==='agents') renderAgents();
+  else if(mod==='halfEq') renderHalfEq();
+  else renderTheory();
+}
+
+/* ── OX ── */
+function renderOx() {
+  const i=st.idx.ox%oxTasks.length, t=oxTasks[i];
+  const {opts,correctPos}=getSh('ox',i);
+  updateUI();
+  document.getElementById('mod-ox').innerHTML=`
+  <div class="card">
+    <div class="section-label">01 · Oxidationszahlen bestimmen</div>
+    <div class="task-q">${t.q}</div>
+    <div class="formula-box">${t.formula}</div>
+    <div class="ask-label">Oxidationszahl von ${t.atom} =</div>
+    <div class="options-grid" id="ox-opts">
+      ${opts.map((o,j)=>`<button class="opt" onclick="checkOx(${j},${correctPos})">${o}</button>`).join('')}
+    </div>
+    <div id="ox-fb" class="hidden"></div>
+  </div>`;
+}
+
+function checkOx(ch,cp) {
+  const t=oxTasks[st.idx.ox%oxTasks.length];
+  document.querySelectorAll('#ox-opts .opt').forEach(b=>b.disabled=true);
+  document.querySelectorAll('#ox-opts .opt')[cp].classList.add('correct');
+  const fb=document.getElementById('ox-fb'); fb.classList.remove('hidden');
+  if(ch===cp){st.score++;st.correct++;fb.className='feedback correct';fb.innerHTML='<strong>Richtig!</strong> '+t.hint;}
+  else{document.querySelectorAll('#ox-opts .opt')[ch].classList.add('wrong');fb.className='feedback wrong';fb.innerHTML='<strong>Falsch.</strong> '+t.hint;}
+  fb.innerHTML+=`<br><button class="next-btn" onclick="st.idx.ox++;renderOx()">Nächste Aufgabe →</button>`;
+}
+
+/* ── REDOX ── */
+function renderRedox() {
+  const i=st.idx.redox%redoxTasks.length, t=redoxTasks[i];
+  const key='rd_'+i;
+  if(!st.sh[key]) st.sh[key]=Math.random()<0.5?0:1;
+  const flipped=st.sh[key]===1;
+  const b1=flipped?{l:'Nein, keine Redox',v:'nein'}:{l:'Ja, Redoxreaktion',v:'ja'};
+  const b2=flipped?{l:'Ja, Redoxreaktion',v:'ja'}:{l:'Nein, keine Redox',v:'nein'};
+  updateUI();
+  document.getElementById('mod-redox').innerHTML=`
+  <div class="card">
+    <div class="section-label">02 · Redoxreaktion erkennen</div>
+    <div class="task-q">${t.q}</div>
+    <div class="formula-box">${t.formula}</div>
+    <div class="options-grid cols-2" id="rd-opts">
+      <button class="opt" onclick="checkRedox('${b1.v}')">${b1.l}</button>
+      <button class="opt" onclick="checkRedox('${b2.v}')">${b2.l}</button>
+    </div>
+    <div id="rd-fb" class="hidden"></div>
+  </div>`;
+}
+
+function checkRedox(ans) {
+  const t=redoxTasks[st.idx.redox%redoxTasks.length];
+  document.querySelectorAll('#rd-opts .opt').forEach(b=>{
+    b.disabled=true;
+    if((b.textContent.includes('Ja')&&t.answer==='ja')||(b.textContent.includes('Nein')&&t.answer==='nein'))
+      b.classList.add('correct');
+  });
+  const fb=document.getElementById('rd-fb'); fb.classList.remove('hidden');
+  if(ans===t.answer){
+    st.score++;st.correct++;fb.className='feedback correct';
+    if(t.answer==='ja'){
+      fb.innerHTML='<strong>Richtig!</strong> Es ist eine Redoxreaktion.<br><br>';
+      t.changes.forEach(c=>fb.innerHTML+=`<span class="tag ${c.includes('oxidiert')?'tag-ox':'tag-red-chem'}">${c}</span> `);
+    } else fb.innerHTML='<strong>Richtig!</strong> '+t.noR;
+  } else {
+    fb.className='feedback wrong';
+    if(t.answer==='ja'){
+      fb.innerHTML='<strong>Falsch.</strong> Es ist doch eine Redoxreaktion:<br><br>';
+      t.changes.forEach(c=>fb.innerHTML+=`<span class="tag ${c.includes('oxidiert')?'tag-ox':'tag-red-chem'}">${c}</span> `);
+    } else fb.innerHTML='<strong>Falsch.</strong> '+t.noR;
+  }
+  fb.innerHTML+=`<br><button class="next-btn" onclick="st.idx.redox++;renderRedox()">Nächste Aufgabe →</button>`;
+}
+
+/* ── AGENTS ── */
+function renderAgents() {
+  const i=st.idx.agents%agentsTasks.length, t=agentsTasks[i];
+  const {opts,correctPos}=getSh('agents',i);
+  updateUI();
+  document.getElementById('mod-agents').innerHTML=`
+  <div class="card">
+    <div class="section-label">03 · Oxidations- und Reduktionsmittel</div>
+    <div class="task-q">${t.q}</div>
+    <div class="formula-box">${t.formula}</div>
+    <div class="feedback info" style="margin-bottom:1.25rem">${t.info}</div>
+    <div class="options-grid" id="ag-opts">
+      ${opts.map((o,j)=>`<button class="opt" onclick="checkAgents(${j},${correctPos})">${o}</button>`).join('')}
+    </div>
+    <div id="ag-fb" class="hidden"></div>
+  </div>`;
+}
+
+function checkAgents(ch,cp) {
+  const t=agentsTasks[st.idx.agents%agentsTasks.length];
+  document.querySelectorAll('#ag-opts .opt').forEach(b=>b.disabled=true);
+  document.querySelectorAll('#ag-opts .opt')[cp].classList.add('correct');
+  const fb=document.getElementById('ag-fb'); fb.classList.remove('hidden');
+  if(ch===cp){st.score++;st.correct++;fb.className='feedback correct';fb.innerHTML='<strong>Richtig!</strong> '+t.hint;}
+  else{document.querySelectorAll('#ag-opts .opt')[ch].classList.add('wrong');fb.className='feedback wrong';fb.innerHTML='<strong>Falsch.</strong> '+t.hint;}
+  fb.innerHTML+=`<br><button class="next-btn" onclick="st.idx.agents++;renderAgents()">Nächste Aufgabe →</button>`;
+}
+
+/* ── HALF EQ ── */
+function renderHalfEq() {
+  const i=st.idx.halfEq%halfEqTasks.length, t=halfEqTasks[i];
+  const {opts,correctPos}=getSh('halfEq',i);
+  updateUI();
+  document.getElementById('mod-halfEq').innerHTML=`
+  <div class="card">
+    <div class="section-label">04 · Teilgleichungen aufstellen</div>
+    <div class="task-q">${t.q}</div>
+    <div class="options-grid cols-1" id="hq-opts">
+      ${opts.map((o,j)=>`<button class="opt" style="text-align:left;padding:12px 16px;font-size:13px" onclick="checkHalf(${j},${correctPos})">${o}</button>`).join('')}
+    </div>
+    <div id="hq-fb" class="hidden"></div>
+  </div>`;
+}
+
+function checkHalf(ch,cp) {
+  const t=halfEqTasks[st.idx.halfEq%halfEqTasks.length];
+  document.querySelectorAll('#hq-opts .opt').forEach(b=>b.disabled=true);
+  document.querySelectorAll('#hq-opts .opt')[cp].classList.add('correct');
+  const fb=document.getElementById('hq-fb'); fb.classList.remove('hidden');
+  if(ch===cp){st.score++;st.correct++;fb.className='feedback correct';fb.innerHTML='<strong>Richtig!</strong> '+t.hint;}
+  else{document.querySelectorAll('#hq-opts .opt')[ch].classList.add('wrong');fb.className='feedback wrong';fb.innerHTML='<strong>Falsch.</strong> '+t.hint;}
+  fb.innerHTML+=`<br><button class="next-btn" onclick="st.idx.halfEq++;renderHalfEq()">Nächste Aufgabe →</button>`;
+}
+
+/* ── THEORY ── */
+function renderTheory() {
+  document.getElementById('mod-theory').innerHTML=`
+  <div class="card">
+    <div class="section-label">Theorie · Übersicht</div>
+    <div class="theory-section">
+      <h3>Was ist eine Redoxreaktion?</h3>
+      <p>Bei einer Redoxreaktion werden Elektronen von einem Stoff auf einen anderen übertragen. Oxidation (Elektronenabgabe) und Reduktion (Elektronenaufnahme) laufen immer gleichzeitig ab – deshalb: <em>Redox</em>.</p>
+    </div>
+    <div class="theory-section">
+      <h3>Oxidationszahlen – Regeln</h3>
+      <ul class="rule-list">
+        <li>Reinstoffe: OZ = 0 &nbsp;(Fe, O₂, Zn, Cl₂ …)</li>
+        <li>Einfache Ionen: OZ = Ladung &nbsp;(Na⁺ = +1, Cl⁻ = −1)</li>
+        <li>Sauerstoff O: meist −2 &nbsp;(Ausnahme Peroxide: −1)</li>
+        <li>Wasserstoff H: meist +1 &nbsp;(Ausnahme Metallhydride: −1)</li>
+        <li>Fluor F: immer −1 &nbsp;(elektronegativstes Element)</li>
+        <li>Summe aller OZ = Gesamtladung der Verbindung</li>
+      </ul>
+    </div>
+    <div class="theory-section">
+      <h3>Oxidation &amp; Reduktion</h3>
+      <div class="two-col">
+        <div class="info-box info-box-red">
+          <div class="info-box-label">Oxidation</div>
+          <p>Elektronenabgabe · OZ nimmt zu · Das Reduktionsmittel wird oxidiert</p>
+        </div>
+        <div class="info-box info-box-green">
+          <div class="info-box-label">Reduktion</div>
+          <p>Elektronenaufnahme · OZ nimmt ab · Das Oxidationsmittel wird reduziert</p>
+        </div>
+      </div>
+    </div>
+    <div class="theory-section">
+      <h3>Teilgleichungen aufstellen – Methode</h3>
+      <ul class="rule-list">
+        <li>Oxidation schreiben: Stoff → Produkt + n e⁻</li>
+        <li>Reduktion schreiben: Stoff + n e⁻ → Produkt</li>
+        <li>Elektronenanzahl durch Faktoren angleichen</li>
+        <li>Beide Gleichungen addieren → Elektronen kürzen sich heraus</li>
+        <li>Saure Lösung: H⁺ und H₂O zum Ladungsausgleich</li>
+        <li>Alkalische Lösung: OH⁻ und H₂O zum Ladungsausgleich</li>
+      </ul>
+    </div>
+    <div class="theory-section">
+      <h3>Beispiel: Zn + CuSO₄</h3>
+      <div class="eq-block" style="margin-top:10px">
+        <div class="eq-row"><span class="tag tag-ox">Oxidation</span><span class="eq-formula" style="margin-left:10px">Zn → Zn²⁺ + 2e⁻</span></div>
+        <div class="eq-row"><span class="tag tag-red-chem">Reduktion</span><span class="eq-formula" style="margin-left:10px">Cu²⁺ + 2e⁻ → Cu</span></div>
+        <div class="eq-row"><span class="tag tag-neutral">Gesamt</span><span class="eq-formula" style="margin-left:10px">Zn + Cu²⁺ → Zn²⁺ + Cu</span></div>
+      </div>
+    </div>
+    <div class="theory-section">
+      <h3>Beispiel: MnO₄⁻ in saurer Lösung</h3>
+      <div class="eq-block" style="margin-top:10px">
+        <div class="eq-row"><span class="tag tag-ox">Oxidation ×5</span><span class="eq-formula" style="margin-left:10px">5Fe²⁺ → 5Fe³⁺ + 5e⁻</span></div>
+        <div class="eq-row"><span class="tag tag-red-chem">Reduktion ×1</span><span class="eq-formula" style="margin-left:10px">MnO₄⁻ + 8H⁺ + 5e⁻ → Mn²⁺ + 4H₂O</span></div>
+        <div class="eq-row"><span class="tag tag-neutral">Gesamt</span><span class="eq-formula" style="margin-left:10px">MnO₄⁻ + 5Fe²⁺ + 8H⁺ → Mn²⁺ + 5Fe³⁺ + 4H₂O</span></div>
+      </div>
+    </div>
+  </div>`;
+}
+
+// Init
+renderOx();
+</script>
+</body>
+</html>
